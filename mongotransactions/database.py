@@ -17,9 +17,6 @@ class Database:
     """
     Wrapper class around pyMongo::
         database = Database()
-
-    class will load MONGO_URI from env but you may pass a URI into the class init
-
         Database('mongodb+srv://username:passsword@host/)
 
     class will set the database to the first one it has access to but you can
