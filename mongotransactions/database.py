@@ -2,16 +2,17 @@ import os
 from typing import List, Union, Dict
 
 from bson.objectid import ObjectId
-from pymongo import InsertOne, DeleteMany, UpdateOne
+from pymongo import InsertOne, DeleteMany, UpdateMany, UpdateOne
 from pymongo import MongoClient
 from collections import namedtuple
 
 # holds a cache of mongo clients so we only have to connect once
 clientCache = {}
 
-Insert = namedtuple('Insert', ['id', 'transactions'])
-Update = namedtuple('Update', ['transactions'])
-Remove = namedtuple('Remove', ['transactions'])
+Insert = namedtuple("Insert", ["id", "transactions"])
+Update = namedtuple("Update", ["transactions"])
+Remove = namedtuple("Remove", ["transactions"])
+
 
 class Database:
     """
@@ -26,11 +27,12 @@ class Database:
     give you all the collection names available in the selected database
 
     """
+
     client: MongoClient
 
     def __init__(self, uri: str) -> None:
         if not uri:
-            raise ValueError('uri is required')
+            raise ValueError("uri is required")
         if uri not in clientCache:
             clientCache[uri] = MongoClient(uri)
         self.client = clientCache[uri]
@@ -66,17 +68,25 @@ class Transaction:
     def __init__(self, database: Database):
         self.database = database
         self.client = self.database.client
-        self.transactions: Dict[str, List[Union[InsertOne, UpdateOne, DeleteMany]]] = {}  # empty transactions
+        self.transactions: Dict[
+            str, List[Union[InsertOne, UpdateOne, DeleteMany]]
+        ] = {}  # empty transactions
 
     def insert(self, collection: str, document: dict):
         if collection not in self.transactions:
             self.transactions[collection] = []
-        if '_id' not in document:
-            document['_id'] = ObjectId()
+        if "_id" not in document:
+            document["_id"] = ObjectId()
         self.transactions[collection].append(InsertOne(document))
-        return Insert(document['_id'], self.transactions)
+        return Insert(document["_id"], self.transactions)
 
     def update(self, collection: str, col_filter: dict, update: dict):
+        if collection not in self.transactions:
+            self.transactions[collection] = []
+        self.transactions[collection].append(UpdateMany(col_filter, update))
+        return Update(self.transactions)
+
+    def update_one(self, collection: str, col_filter: dict, update: dict):
         if collection not in self.transactions:
             self.transactions[collection] = []
         self.transactions[collection].append(UpdateOne(col_filter, update))

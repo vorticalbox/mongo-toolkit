@@ -1,3 +1,4 @@
 {
-  "python.pythonPath": "/home/aaron/work/packages/mongo-toolkit/venv/bin/python3"
+  "python.pythonPath": "/home/aaron/work/packages/mongotransactions/venv/bin/python3",
+  "python.formatting.provider": "black"
 }
