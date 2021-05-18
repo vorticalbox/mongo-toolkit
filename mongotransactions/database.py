@@ -1,10 +1,9 @@
-import os
+from collections import namedtuple
 from typing import List, Union, Dict
 
 from bson.objectid import ObjectId
 from pymongo import InsertOne, DeleteMany, UpdateMany, UpdateOne
 from pymongo import MongoClient
-from collections import namedtuple
 
 # holds a cache of mongo clients so we only have to connect once
 clientCache = {}
@@ -44,8 +43,6 @@ class Database:
         self.collections = self.db_client.list_collection_names()
 
     def set_database(self, database: str) -> None:
-        if database not in self.databases:
-            raise ValueError(f"{database} is not a valid database {self.databases}")
         self.db_client = self.client[database]
         self._set_collections()
 
@@ -69,7 +66,7 @@ class Transaction:
         self.database = database
         self.client = self.database.client
         self.transactions: Dict[
-            str, List[Union[InsertOne, UpdateOne, DeleteMany]]
+            str, List[Union[InsertOne, UpdateOne, UpdateMany, DeleteMany]]
         ] = {}  # empty transactions
 
     def insert(self, collection: str, document: dict):
@@ -79,6 +76,11 @@ class Transaction:
             document["_id"] = ObjectId()
         self.transactions[collection].append(InsertOne(document))
         return Insert(document["_id"], self.transactions)
+
+    def insert_many(self, collection: str, docs: List[dict]):
+        if not isinstance(docs, list):
+            raise ValueError('must pass a list')
+        return [self.insert(collection, doc) for doc in docs]
 
     def update(self, collection: str, col_filter: dict, update: dict):
         if collection not in self.transactions:
