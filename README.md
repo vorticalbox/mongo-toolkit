@@ -21,7 +21,7 @@ for doc in my_collection.find():
 
 first = my_collection.find_one()
 
-# a list of collections is avalilble 
+# a list of collections is available 
 
 print(database.list_collections()) # ['my_collection']
 
@@ -31,7 +31,7 @@ print(database.list_collections()) # ['my_collection']
 
 package also contains a wrapper around mongo transactions and bulkwrite so that
 multiple saves/updates/removes across multiple collections to be batch wrote
-to the server and it will all roll back if any one operation fails.
+to the server, and it will all roll back if anyone operation fails.
 
 in MongoDB 4.2 and earlier, you cannot create collections in transactions.
 
@@ -49,7 +49,7 @@ database.set_database('db_name')
 transaction = Transaction(database)
 
 
-# insert operations return a named tuple with _id that will be used and the current transactions
+# insert operations return a named tuple with id that will be used and the current transactions
 insert = transaction.insert('my_collection', { 'name': 'test'})
 transaction.insert('events', { 'details': 'new document added', 'doc_id': insert.id})
 
