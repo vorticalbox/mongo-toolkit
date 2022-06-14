@@ -4,7 +4,6 @@ from typing import List, Union, Dict
 from bson.objectid import ObjectId
 from pymongo import InsertOne, DeleteMany, UpdateMany, UpdateOne
 from pymongo import MongoClient
-from gridfs import GridFS
 
 # holds a cache of mongo clients so we only have to connect once
 clientCache = {}
