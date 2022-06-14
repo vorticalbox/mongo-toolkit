@@ -9,7 +9,7 @@ from gridfs import GridFS
 # holds a cache of mongo clients so we only have to connect once
 clientCache = {}
 
-Insert = namedtuple("Insert", ["_id", "transactions"])
+Insert = namedtuple("Insert", ["id", "transactions"])
 Update = namedtuple("Update", ["transactions"])
 Remove = namedtuple("Remove", ["transactions"])
 

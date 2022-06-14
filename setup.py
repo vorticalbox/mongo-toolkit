@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='mongotransactions',
-    version='1.2.3',
+    version='1.2.4',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/vorticalbox/mongotransactions',
