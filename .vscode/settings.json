@@ -1,4 +1,3 @@
 {
-  "python.pythonPath": "/home/aaron/work/packages/mongotransactions/venv/bin/python3",
-  "python.formatting.provider": "black"
+  "python.formatting.provider": "autopep8"
 }
