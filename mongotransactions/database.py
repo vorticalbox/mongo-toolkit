@@ -4,11 +4,12 @@ from typing import List, Union, Dict
 from bson.objectid import ObjectId
 from pymongo import InsertOne, DeleteMany, UpdateMany, UpdateOne
 from pymongo import MongoClient
+from gridfs import GridFS
 
 # holds a cache of mongo clients so we only have to connect once
 clientCache = {}
 
-Insert = namedtuple("Insert", ["id", "transactions"])
+Insert = namedtuple("Insert", ["_id", "transactions"])
 Update = namedtuple("Update", ["transactions"])
 Remove = namedtuple("Remove", ["transactions"])
 
@@ -70,11 +71,9 @@ class Transaction:
         ] = {}  # empty transactions
 
     def insert(self, collection: str, document: dict):
-        if collection not in self.transactions:
-            self.transactions[collection] = []
         if "_id" not in document:
             document["_id"] = ObjectId()
-        self.transactions[collection].append(InsertOne(document))
+        self.__append_data(collection, InsertOne(document))
         return Insert(document["_id"], self.transactions)
 
     def insert_many(self, collection: str, docs: List[dict]):
@@ -83,22 +82,21 @@ class Transaction:
         return [self.insert(collection, doc) for doc in docs]
 
     def update(self, collection: str, col_filter: dict, update: dict):
-        if collection not in self.transactions:
-            self.transactions[collection] = []
-        self.transactions[collection].append(UpdateMany(col_filter, update))
+        self.__append_data(collection, UpdateMany(col_filter, update))
         return Update(self.transactions)
 
     def update_one(self, collection: str, col_filter: dict, update: dict):
-        if collection not in self.transactions:
-            self.transactions[collection] = []
-        self.transactions[collection].append(UpdateOne(col_filter, update))
+        self.__append_data(collection, UpdateOne(col_filter, update))
         return Update(self.transactions)
 
     def remove(self, collection: str, col_filter: dict):
+        self.__append_data(collection, DeleteMany(col_filter))
+        return Remove(self.transactions)
+    
+    def __append_data(self, collection: str, data: Union[InsertOne, DeleteMany, UpdateMany, UpdateOne]):
         if collection not in self.transactions:
             self.transactions[collection] = []
-        self.transactions[collection].append(DeleteMany(col_filter))
-        return Remove(self.transactions)
+        self.transactions[collection].append(data)
 
     def run(self):
         results = {}
@@ -107,4 +105,5 @@ class Transaction:
                 for collection in list(self.transactions.keys()):
                     col = self.database.get_collection(collection)
                     results[collection] = col.bulk_write(self.transactions[collection])
-        return results
+        return results      
+    
